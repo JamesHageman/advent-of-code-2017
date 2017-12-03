@@ -24,17 +24,6 @@ manhattanDistance (x, y) = abs x + abs y
 
 day3part1 = manhattanDistance $ positionOf 325489
 
-test =
-  [
-    (0, 0) == positionOf 1,
-    (2, 1) == positionOf 12,
-    (0, -2) == positionOf 23,
-    (1, -2) == positionOf 24,
-    (2,-2) == positionOf 25,
-    (3,-2) == positionOf 26,
-    (3,-1) == positionOf 27
-  ]
-
 add :: (Int, Int) -> (Int, Int) -> (Int, Int)
 add (a, b) (c, d) = (a + c, b + d)
 
