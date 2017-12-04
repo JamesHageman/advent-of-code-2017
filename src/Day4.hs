@@ -1,8 +1,8 @@
 module Day4 where
 
-import Data.Set as Set
-import Data.Monoid
+import qualified Data.Set as Set
 import Data.List
+import Data.Maybe (isJust)
 
 data Passphrase = Passphrase [String] (Set.Set String) deriving (Show)
 
@@ -27,7 +27,7 @@ parsePassphrases :: (Passphrase -> Bool) -> String -> [Maybe Passphrase]
 parsePassphrases validator = fmap (parsePassphrase validator) . lines
 
 countValid :: [Maybe a] -> Int
-countValid xs = getSum $ foldMap (maybe mempty (const (Sum 1))) xs
+countValid = length . filter isJust
 
 day4part1 = countValid . parsePassphrases validate1 <$> readFile "test/Day4.input"
 day4part2 = countValid . parsePassphrases validate2 <$> readFile "test/Day4.input"
