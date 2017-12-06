@@ -1,14 +1,13 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, BangPatterns #-}
 
 module Day5 where
 
-import qualified Data.Map.Strict as M
+import qualified Data.IntMap.Strict as M
 import Control.Monad.State.Strict
 import Control.Lens
 import Control.Lens.Operators
-import Debug.Trace
 
-type Jumps = M.Map Int Int
+type Jumps = M.IntMap Int
 data JumpState = JumpState { _jumps :: Jumps, _position :: Int, _numJumps :: Int } deriving (Show)
 makeLenses ''JumpState
 
@@ -28,7 +27,18 @@ executeJumps = do
         (state^.numJumps + 1)
       executeJumps
 
+executeJumps2 :: JumpState -> Int
+executeJumps2 state =
+  case M.lookup (_position state) (_jumps state) of
+    Nothing -> _numJumps state
+    Just offset -> do
+       executeJumps2 $ JumpState
+        (M.insert (_position state) (if offset >= 3 then offset - 1 else offset + 1) (_jumps state))
+        (_position state + offset)
+        (_numJumps state + 1)
+
 initialState :: Jumps -> JumpState
 initialState jumps = JumpState jumps 0 0
 
 day5part1 file = evalState executeJumps . initialState . parseJumps <$> readFile file
+day5part2 file = executeJumps2 . initialState . parseJumps <$> readFile file

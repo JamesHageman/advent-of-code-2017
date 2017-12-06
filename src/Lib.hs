@@ -1,5 +1,5 @@
 module Lib
-    ( someFunc
+    ( currentMain
     ) where
 
 import Day1
@@ -8,5 +8,4 @@ import Day3
 import Day4
 import Day5
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+currentMain = day5part2 "test/Day5.input" >>= print
