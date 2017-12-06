@@ -6,6 +6,7 @@ import qualified Data.IntMap.Strict as M
 import Control.Monad.State.Strict
 import Control.Lens
 import Control.Lens.Operators
+import Debug.Trace
 
 type Jumps = M.IntMap Int
 data JumpState = JumpState { _jumps :: Jumps, _position :: Int, _numJumps :: Int } deriving (Show)
@@ -29,7 +30,7 @@ executeJumps = do
 
 executeJumps2 :: JumpState -> Int
 executeJumps2 state =
-  case M.lookup (_position state) (_jumps state) of
+  case M.lookup (_position (trace (show state) state)) (_jumps state) of
     Nothing -> _numJumps state
     Just offset -> do
        executeJumps2 $ JumpState
