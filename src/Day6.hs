@@ -1,6 +1,6 @@
 module Day6 where
 
-import qualified Data.Set as Set
+import Data.Map.Strict as Map
 import Data.Vector as Vector
 import qualified Data.Vector.Mutable as MV
 import Control.Monad.ST
@@ -9,7 +9,7 @@ type Bank = Int
 type Memory = Vector Bank
 
 parseMemory :: String -> Memory
-parseMemory = fromList . fmap read . words
+parseMemory = Vector.fromList . fmap read . words
 
 largestBankWithIndex :: Memory -> (Int, Bank)
 largestBankWithIndex memory = Vector.ifoldl findMax (0, Vector.head memory) memory
@@ -33,13 +33,26 @@ redistribute i remainingValue v = do
   MV.modify v (+1) j
   redistribute (j + 1) (remainingValue - 1) v
 
-numRebalancesUntilSeenConfiguration :: Memory -> Int
-numRebalancesUntilSeenConfiguration memory = go Set.empty memory 1
-  where
-    go seenMemories memory numIterations =
-      let newMemory = rebalance memory in
-      if Set.member newMemory seenMemories then
-        numIterations
-        else go (Set.insert newMemory seenMemories) newMemory (numIterations + 1)
+runIteration :: Map Memory Int -> Memory -> Int -> (Int, Int)
+runIteration seenMemories memory numIterations =
+  let newMemory = rebalance memory in
+  case Map.lookup newMemory seenMemories of
+    Just index -> (numIterations, numIterations - index)
+    Nothing -> runIteration
+      (Map.insert newMemory numIterations seenMemories)
+      newMemory
+      (numIterations + 1)
 
-day6part1 = numRebalancesUntilSeenConfiguration . parseMemory <$> readFile "test/Day6.input"
+runIterations :: Memory -> (Int, Int)
+runIterations memory = runIteration Map.empty memory 1
+
+numRebalancesUntilSeenConfiguration :: Memory -> Int
+numRebalancesUntilSeenConfiguration = fst . runIterations
+
+numCycles :: Memory -> Int
+numCycles = snd . runIterations
+
+runOnInput f = f . parseMemory <$> readFile "test/Day6.input"
+
+day6part1 = runOnInput numRebalancesUntilSeenConfiguration
+day6part2 = runOnInput numCycles
