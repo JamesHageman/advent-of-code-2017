@@ -1,33 +1,24 @@
 module Day7 where
 
 import Text.Parsec
-import qualified Text.Parsec.Token as P
-import Text.Parsec.Language (emptyDef)
 
 data Statement = Statement String Int [String] deriving (Show)
 
-lexer = P.makeTokenParser emptyDef
+commaSep :: Parsec String m a -> Parsec String m [a]
+commaSep p = p `sepBy1` (string "," *> spaces)
 
-int = fromIntegral <$> P.integer lexer
+parens = between (string "(") (string ")")
 
-programName = many1 letter
+word = many1 letter
+int = read <$> many1 digit
+arrow = space *> string "->" *> space
+childNames = arrow *> commaSep word
 
-childNames = do
-  string " -> "
-  programName `sepBy1` string ", "
-
-weight = do
-  string "("
-  w <- int
-  string ")"
-  return w
-
-statement = do
-  name <- programName
-  space
-  weight <- weight
-  children <- option [] childNames
-  return $ Statement name weight children
+statement = Statement <$> name <*> weight <*> children
+  where
+    name = word <* space
+    weight = parens int
+    children = try childNames <|> return []
 
 input = statement `endBy1` endOfLine
 
