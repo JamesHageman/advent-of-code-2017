@@ -2,11 +2,11 @@ module Day7 where
 
 import Text.Parsec
 import qualified Text.Parsec.Token as P
-import Text.Parsec.Language (haskellDef)
+import Text.Parsec.Language (emptyDef)
 
 data Statement = Statement String Int [String] deriving (Show)
 
-lexer = P.makeTokenParser haskellDef
+lexer = P.makeTokenParser emptyDef
 
 int = fromIntegral <$> P.integer lexer
 
