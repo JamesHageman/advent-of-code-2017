@@ -82,18 +82,24 @@ resolveTree pid = do
     Just tree -> return tree
     Nothing -> resolveStatement pid
 
-compute :: S.State ([Statement], M.Map Pid SupervisionTree) Pid
-compute = do
+computeRoot :: S.State ([Statement], M.Map Pid SupervisionTree) SupervisionTree
+computeRoot = do
   (statements, trees) <- get
   case (statements, trees) of
     (s:_, _) -> do
       resolveTree $ statementPid s
-      compute
-    ([], trees) -> return $ fst $ head $ M.toList trees
+      computeRoot
+    ([], trees) -> return $ snd $ head $ M.toList trees
 
 initialState statements = (statements, M.empty)
+toTree :: [Statement] -> SupervisionTree
+toTree statements = S.evalState computeRoot (statements, M.empty)
+
+weight :: SupervisionTree -> Int
+weight (Leaf (Process _ weight)) = weight
+weight (Node (Process _ w) children) = w + childWeight
+  where childWeight = sum $ weight . snd <$> M.toList children
 
 day7part1 file = do 
   x <- readFile file
-  return $ (S.evalState compute . initialState) <$> parse input "" x
-
+  return $ (treePid . toTree) <$> parse input "" x
