@@ -12,6 +12,7 @@ type Reg = String
 data Op = Inc | Dec deriving (Show)
 data Cond = Eq | Ne | Lt | Gt | Le | Ge deriving (Show)
 type Registers = M.Map Reg Int
+type RegState = (Registers, Int)
 
 lexer = P.makeTokenParser emptyDef
 
@@ -61,17 +62,18 @@ instructions = many1 instr
 registerValue :: Reg -> Registers -> Int
 registerValue = M.findWithDefault 0
 
-applyInstruction :: Registers -> Instr -> Registers
-applyInstruction registers (Instr r1 op x r2 cond y) =
+applyInstruction :: RegState -> Instr -> RegState
+applyInstruction state@(registers, currentMax) (Instr r1 op x r2 cond y) =
   if registerValue r2 registers `pred` y then
-    M.alter (Just . f x . fromMaybe 0) r1 registers 
-    else registers
+    let newRegisters = M.alter (Just . f x . fromMaybe 0) r1 registers in
+    (newRegisters, max currentMax $ maxValue newRegisters)
+    else state
   where
     f = flip $ operation op
     pred = condition cond
 
-compute :: [Instr] -> Registers
-compute = foldl applyInstruction M.empty
+compute :: [Instr] -> RegState
+compute = foldl applyInstruction (M.empty, 0)
 
 maxValue :: Registers -> Int
 maxValue registers =
@@ -81,4 +83,5 @@ maxValue registers =
 
 parseFile f file = (fmap f . parse instructions "") <$> readFile file
 
-day8part1 = parseFile $ maxValue . compute
+day8part1 = parseFile $ maxValue . fst . compute
+day8part2 = parseFile $ snd . compute
