@@ -67,7 +67,7 @@ applyInstruction registers (Instr r1 op x r2 cond y) =
     M.alter (Just . f x . fromMaybe 0) r1 registers 
     else registers
   where
-    f = operation op
+    f = flip $ operation op
     pred = condition cond
 
 compute :: [Instr] -> Registers
