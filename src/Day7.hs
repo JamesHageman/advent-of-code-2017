@@ -2,7 +2,6 @@ module Day7 where
 
 import Text.Parsec
 import qualified Data.Map.Strict as M
-import qualified Data.Set as Set
 import Control.Monad.State.Strict as S
 import Data.List (find)
 
