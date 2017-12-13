@@ -12,4 +12,6 @@ import Day7
 import Day8
 import Day9
 
+import Day12
+
 currentMain = day5part2 "test/Day5.input" >>= print
